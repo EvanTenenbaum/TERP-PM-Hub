@@ -1,33 +1,45 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
-import { Streamdown } from 'streamdown';
+import { APP_TITLE, getLoginUrl } from "@/const";
+import { useEffect } from "react";
 
-/**
- * All content in this page are only for example, replace with your own feature implementation
- * When building pages, remember your instructions in Frontend Workflow, Frontend Best Practices, Design Guide and Common Pitfalls
- */
 export default function Home() {
-  // The userAuth hooks provides authentication state
-  // To implement login/logout functionality, simply call logout() or redirect to getLoginUrl()
-  let { user, loading, error, isAuthenticated, logout } = useAuth();
+  const { user, loading, isAuthenticated } = useAuth();
 
-  // If theme is switchable in App.tsx, we can implement theme toggling like this:
-  // const { theme, toggleTheme } = useTheme();
+  useEffect(() => {
+    if (isAuthenticated) {
+      window.location.href = "/dashboard";
+    }
+  }, [isAuthenticated]);
 
-  // Use APP_LOGO (as image src) and APP_TITLE if needed
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="animate-spin w-8 h-8" />
+      </div>
+    );
+  }
 
-  return (
-    <div className="min-h-screen flex flex-col">
-      <main>
-        {/* Example: lucide-react for icons */}
-        <Loader2 className="animate-spin" />
-        Example Page
-        {/* Example: Streamdown for markdown rendering */}
-        <Streamdown>Any **markdown** content</Streamdown>
-        <Button variant="default">Example Button</Button>
-      </main>
-    </div>
-  );
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-4">
+        <div className="text-center space-y-2">
+          <h1 className="text-4xl font-bold">{APP_TITLE}</h1>
+          <p className="text-xl text-muted-foreground">AI-Powered Product Management for TERP</p>
+        </div>
+        <div className="max-w-2xl text-center space-y-4">
+          <p className="text-muted-foreground">
+            Manage your product development with specialized AI agents. Capture ideas, plan features, 
+            generate PRDs, and ensure quality - all integrated with your GitHub repository.
+          </p>
+          <Button asChild size="lg">
+            <a href={getLoginUrl()}>Sign In to Get Started</a>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }

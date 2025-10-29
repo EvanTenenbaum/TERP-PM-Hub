@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, pmItems, InsertPmItem, conversations, InsertConversation, messages, InsertMessage, githubSync, InsertGithubSync } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,141 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// PM Items
+
+export async function upsertPMItem(item: InsertPmItem) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot upsert PM item: database not available");
+    return;
+  }
+
+  await db.insert(pmItems).values(item).onDuplicateKeyUpdate({
+    set: {
+      title: item.title,
+      description: item.description,
+      status: item.status,
+      tags: item.tags,
+      related: item.related,
+      metadata: item.metadata,
+      lastSyncedAt: new Date(),
+      updatedAt: item.updatedAt,
+    },
+  });
+}
+
+export async function getAllPMItems() {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get PM items: database not available");
+    return [];
+  }
+
+  return await db.select().from(pmItems);
+}
+
+export async function getPMItemById(itemId: string) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get PM item: database not available");
+    return null;
+  }
+
+  const result = await db.select().from(pmItems).where(eq(pmItems.itemId, itemId)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+// Conversations
+
+export async function createConversation(conversation: InsertConversation) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot create conversation: database not available");
+    return null;
+  }
+
+  const result = await db.insert(conversations).values(conversation);
+  return result[0].insertId;
+}
+
+export async function getUserConversations(userId: number, agentType?: string) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get conversations: database not available");
+    return [];
+  }
+
+  if (agentType) {
+    return await db.select().from(conversations).where(eq(conversations.userId, userId));
+  }
+
+  return await db.select().from(conversations).where(eq(conversations.userId, userId));
+}
+
+export async function getConversationById(id: number) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get conversation: database not available");
+    return null;
+  }
+
+  const result = await db.select().from(conversations).where(eq(conversations.id, id)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+// Messages
+
+export async function createMessage(message: InsertMessage) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot create message: database not available");
+    return null;
+  }
+
+  const result = await db.insert(messages).values(message);
+  return result[0].insertId;
+}
+
+export async function getConversationMessages(conversationId: number) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get messages: database not available");
+    return [];
+  }
+
+  return await db.select().from(messages).where(eq(messages.conversationId, conversationId));
+}
+
+// GitHub Sync
+
+export async function createSyncRecord(sync: InsertGithubSync) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot create sync record: database not available");
+    return null;
+  }
+
+  const result = await db.insert(githubSync).values(sync);
+  return result[0].insertId;
+}
+
+export async function updateSyncRecord(id: number, updates: Partial<InsertGithubSync>) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot update sync record: database not available");
+    return;
+  }
+
+  await db.update(githubSync).set(updates as any).where(eq(githubSync.id, id));
+}
+
+export async function getLatestSync(syncType: string) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get latest sync: database not available");
+    return null;
+  }
+
+  const result = await db.select().from(githubSync).where(eq(githubSync.syncType, syncType)).orderBy(githubSync.startedAt).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
