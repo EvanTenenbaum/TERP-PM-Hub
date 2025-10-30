@@ -1,5 +1,6 @@
 import { invokeLLM } from "./_core/llm";
 import { getFileContent } from "./github";
+import { generateAgentContext, getProtocolSummary, getBibleSection } from "./knowledge";
 
 export interface ValidationIssue {
   type: 'syntax' | 'type' | 'import' | 'lint';
@@ -48,6 +49,8 @@ export async function generateCode(
   onProgress?: (progress: GenerationProgress) => void
 ): Promise<GenerationResult> {
   try {
+    // Load TERP protocols
+    const protocolSummary = getProtocolSummary();
     onProgress?.({ stage: 'generating_code', progress: 40, message: 'Generating implementation...' });
 
     const response = await invokeLLM({
@@ -56,13 +59,16 @@ export async function generateCode(
           role: "system",
           content: `You are a senior software engineer implementing features for the TERP project.
 
-Generate clean, production-ready code following these guidelines:
+${protocolSummary}
+
+## Code Generation Guidelines
 - Use TypeScript with proper typing
-- Follow existing code patterns
-- Include error handling
+- Follow existing code patterns from TERP
+- Include comprehensive error handling
 - Add inline comments for complex logic
 - Use modern React patterns (hooks, functional components)
-- Follow the project's conventions
+- Follow TERP conventions and standards above
+- Ensure production-ready quality
 
 Output the code in a structured JSON format:
 {
