@@ -52,3 +52,11 @@
 - Real-time updates
 - Mobile app
 - Integration webhooks
+
+## New Features
+- [x] Timeline visualization for feature dependencies and milestones
+- [x] Interactive dependency graph
+- [x] Project milestone tracking
+- [x] Mobile-first responsive design for all pages
+- [x] Reorganize dashboard - Idea Inbox chat at the top
+- [x] Quick capture interface for ideas
