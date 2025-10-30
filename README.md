@@ -3,6 +3,7 @@
 > AI-powered Product Management Hub for intelligent idea capture, triage, PRD generation, and implementation planning
 
 [![GitHub](https://img.shields.io/badge/GitHub-EvanTenenbaum%2FTERP--PM--Hub-blue)](https://github.com/EvanTenenbaum/TERP-PM-Hub)
+[![Build Status](https://github.com/EvanTenenbaum/TERP-PM-Hub/actions/workflows/deploy.yml/badge.svg)](https://github.com/EvanTenenbaum/TERP-PM-Hub/actions)
 [![Version](https://img.shields.io/badge/version-1.0.0-brightgreen)](version.json)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![TERP Protocols](https://img.shields.io/badge/TERP-Development%20Protocols-orange)](https://github.com/EvanTenenbaum/TERP/blob/main/docs/DEVELOPMENT_PROTOCOLS.md)
@@ -271,6 +272,7 @@ pnpm run dev
 
 - [DEPLOYMENT.md](./DEPLOYMENT.md) - Complete deployment procedures and workflows
 - [GITHUB_WORKFLOW.md](./GITHUB_WORKFLOW.md) - Git workflow and remote management
+- [CI_CD_SETUP.md](./CI_CD_SETUP.md) - Automatic build and deployment via GitHub Actions
 - [PER_USER_CREDIT_SYSTEM.md](./docs/PER_USER_CREDIT_SYSTEM.md) - Per-user API key documentation
 - [TERP Development Protocols](https://github.com/EvanTenenbaum/TERP/blob/main/docs/DEVELOPMENT_PROTOCOLS.md) - Required development standards
 

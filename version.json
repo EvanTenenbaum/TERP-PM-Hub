@@ -1,6 +1,6 @@
 {
-  "version": "1.0.0",
-  "commit": "bc9b1e7",
+  "version": "1.1.0",
+  "commit": "ea45441",
   "date": "2025-10-30",
-  "description": "Initial PM Hub release with per-user credit system and GitHub integration"
+  "description": "Added CI/CD with automatic builds on every push via GitHub Actions"
 }
