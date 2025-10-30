@@ -76,6 +76,13 @@ export const pmItems = mysqlTable("pmItems", {
   githubPath: varchar("githubPath", { length: 500 }),
   /** Full metadata from GitHub */
   metadata: json("metadata").$type<Record<string, any>>(),
+  /** AI-generated suggestions for where/how to apply feedback */
+  aiSuggestions: json("aiSuggestions").$type<{
+    where: string[];
+    how: string;
+    confidence: number;
+    generatedAt: string;
+  }>(),
   /** Last sync timestamp */
   lastSyncedAt: timestamp("lastSyncedAt"),
   createdAt: timestamp("createdAt").notNull(),

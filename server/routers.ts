@@ -336,6 +336,127 @@ export const appRouter = router({
         return { handoffPrompt };
       }),
   }),
+
+  // Client Feedback Portal
+  feedback: router({
+    // List all feedback items
+    list: protectedProcedure
+      .input(z.object({ includeArchived: z.boolean().optional() }))
+      .query(async ({ input }) => {
+        const items = await db.getAllPMItems();
+        
+        // Filter to only IDEA and BUG types (client feedback)
+        let feedbackItems = items.filter(item => item.type === 'IDEA' || item.type === 'BUG');
+        
+        // Filter out archived if requested
+        if (!input.includeArchived) {
+          feedbackItems = feedbackItems.filter(item => item.status !== 'archived');
+        }
+        
+        return feedbackItems;
+      }),
+    
+    // Get single feedback item with AI suggestions
+    getWithSuggestions: protectedProcedure
+      .input(z.object({ id: z.string() }))
+      .query(async ({ input }) => {
+        const item = await db.getPMItemById(input.id);
+        if (!item) {
+          throw new Error('Feedback not found');
+        }
+        
+        // Generate suggestions if not already cached
+        if (!item.aiSuggestions) {
+          // Will be generated on-demand via generateSuggestions mutation
+          return item;
+        }
+        
+        return item;
+      }),
+    
+    // Archive feedback item
+    archive: protectedProcedure
+      .input(z.object({ id: z.string() }))
+      .mutation(async ({ input }) => {
+        const item = await db.getPMItemById(input.id);
+        if (!item) {
+          throw new Error('Feedback not found');
+        }
+        await db.updatePMItem(item.id, { status: 'archived' });
+        return { success: true };
+      }),
+    
+    // Generate AI suggestions for feedback
+    generateSuggestions: protectedProcedure
+      .input(z.object({ id: z.string() }))
+      .mutation(async ({ input }) => {
+        const item = await db.getPMItemById(input.id);
+        if (!item) {
+          throw new Error('Feedback not found');
+        }
+        
+        // Build prompt for AI suggestion generation
+        const systemPrompt = `You are an expert product manager analyzing customer feedback for the TERP ERP system.
+
+TERP has the following modules:
+- Dashboard & Homepage
+- Inventory Management (products, stock, locations, categories)
+- Accounting (chart of accounts, transactions, bank reconciliation)
+- Sales & Quotes (orders, pricing, client management)
+- Reporting & Analytics
+
+Analyze the feedback and provide:
+1. WHERE to apply it (which modules/features)
+2. HOW to implement it (technical approach, complexity, steps)
+3. CONFIDENCE score (0-100) based on clarity and feasibility
+
+Be specific, actionable, and consider TERP's existing architecture.`;
+        
+        const userPrompt = `Feedback Title: ${item.title}\n\nFeedback Description:\n${item.description || 'No description provided'}`;
+        
+        const response = await invokeLLM({
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          response_format: {
+            type: 'json_schema',
+            json_schema: {
+              name: 'feedback_suggestions',
+              strict: true,
+              schema: {
+                type: 'object',
+                properties: {
+                  where: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    description: 'List of TERP modules/features where this feedback applies'
+                  },
+                  how: {
+                    type: 'string',
+                    description: 'Detailed implementation guidance with technical approach'
+                  },
+                  confidence: {
+                    type: 'number',
+                    description: 'Confidence score 0-100 based on clarity and feasibility'
+                  }
+                },
+                required: ['where', 'how', 'confidence'],
+                additionalProperties: false
+              }
+            }
+          }
+        });
+        
+        const suggestions = JSON.parse(response.choices[0].message.content as string);
+        suggestions.generatedAt = new Date().toISOString();
+        
+        // Save suggestions to database
+        await db.updatePMItem(item.id, { aiSuggestions: suggestions });
+        
+        return suggestions;
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
