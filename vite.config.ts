@@ -7,7 +7,8 @@ import { defineConfig } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime()];
+// Disable manus-runtime for mobile compatibility - the inline script is too large
+const plugins = [react(), tailwindcss(), jsxLocPlugin()];
 
 export default defineConfig({
   plugins,
@@ -25,6 +26,8 @@ export default defineConfig({
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
     chunkSizeWarningLimit: 600,
+    target: 'es2015', // Mobile-first: Support iOS Safari 13+, Android Chrome 87+
+    minify: 'esbuild', // Fast and mobile-compatible
     rollupOptions: {
       output: {
         manualChunks(id) {
