@@ -29,15 +29,28 @@ export default function EditFeatureModal({ item, open, onOpenChange, onSuccess }
   const [tags, setTags] = useState(item.tags || []);
   const [showImpactWarning, setShowImpactWarning] = useState(false);
 
-  const updateMutation = trpc.pmItems.update.useMutation({
+  const updateItem = trpc.pmItems.update.useMutation({
     onSuccess: () => {
-      toast.success('Feature updated successfully');
-      onSuccess?.();
+      toast.success("Feature updated successfully");
       onOpenChange(false);
+      onSuccess?.();
     },
     onError: (error) => {
-      toast.error(`Failed to update: ${error.message}`);
-    }
+      toast.error("Failed to update feature");
+      console.error(error);
+    },
+  });
+
+  const deleteItem = trpc.pmItems.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Feature deleted successfully");
+      onOpenChange(false);
+      onSuccess?.();
+    },
+    onError: (error) => {
+      toast.error("Failed to delete feature");
+      console.error(error);
+    },
   });
 
   useEffect(() => {
@@ -51,7 +64,7 @@ export default function EditFeatureModal({ item, open, onOpenChange, onSuccess }
   }, [status, type, priority, item]);
 
   const handleSave = () => {
-    updateMutation.mutate({
+    updateItem.mutate({
       id: item.id,
       title,
       description,
@@ -185,8 +198,9 @@ export default function EditFeatureModal({ item, open, onOpenChange, onSuccess }
             variant="destructive"
             size="sm"
             onClick={() => {
-              // TODO: Implement delete with cascade protection
-              toast.error('Delete functionality coming soon');
+              if (confirm(`Are you sure you want to delete "${item.title}"? This action cannot be undone.`)) {
+                deleteItem.mutate({ id: item.id });
+              }
             }}
           >
             <Trash2 className="w-4 h-4 mr-2" />
@@ -196,8 +210,8 @@ export default function EditFeatureModal({ item, open, onOpenChange, onSuccess }
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={updateMutation.isPending}>
-              {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+            <Button onClick={handleSave} disabled={updateItem.isPending}>
+              {updateItem.isPending ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </DialogFooter>

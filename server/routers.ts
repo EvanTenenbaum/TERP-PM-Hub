@@ -121,6 +121,15 @@ export const appRouter = router({
         const { id, ...updates } = input;
         return await db.updatePMItem(id, updates as any);
       }),
+
+    // Delete PM item
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        // TODO: Add cascade protection - check for dependencies
+        await db.deletePMItem(input.id);
+        return { success: true };
+      }),
   }),
 
   // Conversations
@@ -255,9 +264,10 @@ export const appRouter = router({
               title: parsed.title,
               description: parsed.description,
               status: 'inbox',
+              priority: parsed.priority,
               createdAt: new Date(),
               updatedAt: new Date(),
-              metadata: { conversationId: input.conversationId, priority: parsed.priority }
+              metadata: { conversationId: input.conversationId }
             });
           } catch (e) {
             console.error('Failed to parse inbox item:', e);

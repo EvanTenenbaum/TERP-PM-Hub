@@ -66,6 +66,8 @@ export const pmItems = mysqlTable("pmItems", {
   title: varchar("title", { length: 500 }).notNull(),
   description: text("description"),
   status: mysqlEnum("status", ["inbox", "backlog", "planned", "in-progress", "completed", "on-hold", "archived"]).notNull(),
+  /** Priority level */
+  priority: mysqlEnum("priority", ["low", "medium", "high", "critical"]).default("medium"),
   /** Tags as JSON array */
   tags: json("tags").$type<string[]>(),
   /** Related item IDs as JSON array */

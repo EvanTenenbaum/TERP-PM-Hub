@@ -210,5 +210,28 @@
 - [ ] Build Dependency tracking UI
 - [ ] Build Commenting system with AI interpretation
 - [ ] Build Impact Analysis when editing features
-- [ ] Remove all placeholder buttons/features
+- [x] Remove placeholder delete button - implemented real delete with confirmation
 - [ ] Verify every single button does something real
+
+
+## Full QA & Self-Heal Cycle
+- [x] Test Quick Capture end-to-end (capture → AI → database → inbox)
+  - Fixed: Added priority field to pmItems schema
+- [ ] Test all AI agent chats (Inbox, Planning, QA, Expert)
+- [ ] Test Edit Modal (all fields, save, validation)
+- [ ] Test Tags and Priority management
+- [ ] Test Bulk Actions on multiple items
+- [ ] Test Export (CSV, MD, JSON)
+- [ ] Test Search and filtering
+- [ ] Test Cmd+K command palette
+- [ ] Test Kanban board drag-and-drop
+- [ ] Test Timeline visualization
+- [ ] Test Activity Feed
+- [ ] Test GitHub auto-sync
+- [ ] Test Dev Agent (complexity analysis, quick gen, handoff)
+- [ ] Test Inbox page (triage, convert, quick fix, context)
+- [ ] Test navigation between all pages
+- [ ] Fix any broken features found
+- [ ] Remove remaining placeholders
+- [ ] Verify mobile responsiveness
+- [ ] Final smoke test all features

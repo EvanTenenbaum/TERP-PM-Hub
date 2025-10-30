@@ -149,6 +149,16 @@ export async function updatePMItem(id: number, updates: Partial<InsertPmItem>) {
   return result.length > 0 ? result[0] : null;
 }
 
+export async function deletePMItem(id: number) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot delete PM item: database not available");
+    return;
+  }
+
+  await db.delete(pmItems).where(eq(pmItems.id, id));
+}
+
 // Conversations
 
 export async function createConversation(conversation: InsertConversation) {

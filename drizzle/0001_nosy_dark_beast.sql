@@ -1,0 +1,1 @@
+ALTER TABLE `pmItems` ADD `priority` enum('low','medium','high','critical') DEFAULT 'medium';
