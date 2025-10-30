@@ -4,6 +4,7 @@
  */
 
 import { invokeLLM, type InvokeParams, type InvokeResult } from './llm.js';
+import { getUserApiKeyOptional } from './userApiKey.js';
 
 export interface SmartLLMOptions {
   /** If true, requires code generation (may need paid model) */
@@ -14,6 +15,8 @@ export interface SmartLLMOptions {
   maxTokens?: number;
   /** If true, skip free model and go straight to paid */
   forcePaid?: boolean;
+  /** User's openId for per-user API key usage */
+  userOpenId?: string;
 }
 
 /**
@@ -45,9 +48,16 @@ export async function invokeLLMSmart(
   prompt: string,
   options: SmartLLMOptions = {}
 ): Promise<string> {
+  // Get user's API key if userOpenId provided
+  let apiKey: string | undefined;
+  if (options.userOpenId) {
+    apiKey = await getUserApiKeyOptional(options.userOpenId);
+  }
+
   const params: InvokeParams = {
     messages: [{ role: 'user', content: prompt }],
     maxTokens: options.maxTokens || 2000,
+    apiKey, // Use user's API key if available
   };
 
   // Note: Current system uses gemini-2.5-flash (free) by default

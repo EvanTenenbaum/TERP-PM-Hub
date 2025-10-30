@@ -6,6 +6,8 @@ import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 import * as github from "./github";
 import { invokeLLM } from "./_core/llm";
+import { getUserApiKeyOptional, getUserApiKey } from "./_core/userApiKey";
+import { encrypt, validateApiKeyFormat } from "./_core/encryption";
 import { analyzeFeatureComplexity } from "./complexityAnalyzer";
 import { generateCode, loadSmartContext, createHandoffPackage } from "./codeGenerator";
 import { SelfRegisterSchema, processSelfRegistration } from "./selfRegister";
@@ -29,6 +31,58 @@ export const appRouter = router({
       return {
         success: true,
       } as const;
+    }),
+  }),
+
+  // User Settings
+  settings: router({
+    // Get user's API key status (not the key itself)
+    getApiKeyStatus: protectedProcedure.query(async ({ ctx }) => {
+      const user = await db.getUserByOpenId(ctx.user!.openId);
+      
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      return {
+        hasApiKey: !!user.manusApiKey,
+        updatedAt: user.apiKeyUpdatedAt,
+      };
+    }),
+
+    // Set or update user's Manus API key
+    setApiKey: protectedProcedure
+      .input(z.object({
+        apiKey: z.string().min(1, "API key cannot be empty"),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Validate API key format
+        if (!validateApiKeyFormat(input.apiKey)) {
+          throw new Error('Invalid API key format');
+        }
+
+        // Encrypt the API key before storing
+        const encryptedKey = encrypt(input.apiKey);
+
+        // Update user with encrypted API key
+        await db.upsertUser({
+          openId: ctx.user!.openId,
+          manusApiKey: encryptedKey,
+          apiKeyUpdatedAt: new Date(),
+        });
+
+        return { success: true };
+      }),
+
+    // Remove user's API key
+    removeApiKey: protectedProcedure.mutation(async ({ ctx }) => {
+      await db.upsertUser({
+        openId: ctx.user!.openId,
+        manusApiKey: null,
+        apiKeyUpdatedAt: new Date(),
+      });
+
+      return { success: true };
     }),
   }),
 
@@ -182,7 +236,7 @@ export const appRouter = router({
         id: z.number().optional(),
         context: z.string().min(10, 'Context must be at least 10 characters'),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
         // Support both itemId (string) and id (number) for flexibility
         let item;
         if (input.itemId) {
@@ -199,8 +253,12 @@ export const appRouter = router({
           throw new Error('Item not found');
         }
 
+        // Get user's API key for per-user credit usage
+        const apiKey = ctx.user ? await getUserApiKeyOptional(ctx.user.openId) : undefined;
+
         // Use LLM to analyze original item + new context and generate improvements
         const response = await invokeLLM({
+          apiKey,
           messages: [
             {
               role: 'system',
@@ -345,7 +403,7 @@ Please enhance this item based on the new context.`,
           message: z.string(),
         })
       )
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
         // Save user message
         await db.createMessage({
           conversationId: input.conversationId,
@@ -379,10 +437,14 @@ Please enhance this item based on the new context.`,
           })),
         ];
 
+        // Get user's API key for per-user credit usage
+        const apiKey = ctx.user ? await getUserApiKeyOptional(ctx.user.openId) : undefined;
+
         // Call LLM with structured output for inbox agent
         const useStructured = conversation.agentType === 'inbox';
         
         const response = await invokeLLM({
+          apiKey,
           messages: llmMessages,
           ...(useStructured && {
             response_format: {
@@ -546,7 +608,7 @@ Please enhance this item based on the new context.`,
     // Generate AI suggestions for feedback
     generateSuggestions: protectedProcedure
       .input(z.object({ id: z.string() }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
         const item = await db.getPMItemById(input.id);
         if (!item) {
           throw new Error('Feedback not found');
@@ -571,7 +633,11 @@ Be specific, actionable, and consider TERP's existing architecture.`;
         
         const userPrompt = `Feedback Title: ${item.title}\n\nFeedback Description:\n${item.description || 'No description provided'}`;
         
+        // Get user's API key for per-user credit usage
+        const apiKey = ctx.user ? await getUserApiKeyOptional(ctx.user.openId) : undefined;
+        
         const response = await invokeLLM({
+          apiKey,
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userPrompt }
@@ -653,7 +719,7 @@ Be specific, actionable, and consider TERP's existing architecture.`;
         pmItemId: z.string(),
         additionalContext: z.string().optional(),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
         // Get the PM item
         const item = await db.getPMItemById(input.pmItemId);
         if (!item) {
@@ -665,8 +731,12 @@ Be specific, actionable, and consider TERP's existing architecture.`;
         const relatedItems = item.related ? 
           allItems.filter(i => item.related?.includes(i.itemId)) : [];
 
+        // Get user's API key for per-user credit usage
+        const apiKey = ctx.user ? await getUserApiKeyOptional(ctx.user.openId) : undefined;
+
         // Use LLM to analyze and create structured work item
         const response = await invokeLLM({
+          apiKey,
           messages: [
             {
               role: 'system',

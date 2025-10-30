@@ -12,6 +12,7 @@ import Inbox from "./pages/Inbox";
 import FeedbackPortal from "./pages/FeedbackPortal";
 import ClientFeedback from "./pages/ClientFeedback";
 import Queue from "./pages/Queue";
+import Settings from "./pages/Settings";
 import CommandPalette from "./components/CommandPalette";
 
 function Router() {
@@ -25,6 +26,7 @@ function Router() {
       <Route path={"/submit-feedback"} component={ClientFeedback} />
       <Route path={"/feedback"} component={FeedbackPortal} />
       <Route path={"/queue"} component={Queue} />
+      <Route path={"/settings"} component={Settings} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>

@@ -3,11 +3,15 @@
 > AI-powered Product Management Hub for intelligent idea capture, triage, PRD generation, and implementation planning
 
 [![GitHub](https://img.shields.io/badge/GitHub-EvanTenenbaum%2FTERP--PM--Hub-blue)](https://github.com/EvanTenenbaum/TERP-PM-Hub)
+[![Version](https://img.shields.io/badge/version-1.0.0-brightgreen)](version.json)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![TERP Protocols](https://img.shields.io/badge/TERP-Development%20Protocols-orange)](https://github.com/EvanTenenbaum/TERP/blob/main/docs/DEVELOPMENT_PROTOCOLS.md)
 
 ## Overview
 
 TERP PM Hub is a comprehensive product management system that leverages AI to streamline the entire product development workflow—from initial idea capture to implementation planning. Built with modern web technologies and integrated with Manus Forge AI, it automates tedious PM tasks while maintaining human oversight and control.
+
+**Development Standards:** This project follows the [TERP Development Protocols](https://github.com/EvanTenenbaum/TERP/blob/main/docs/DEVELOPMENT_PROTOCOLS.md) for production-ready code, version management, and deployment procedures.
 
 ## Key Features
 
@@ -242,6 +246,34 @@ This is a private project for TERP. If you have access and want to contribute:
 3. Test thoroughly
 4. Submit a pull request
 
+## Deployment
+
+This project uses a GitHub-first development workflow:
+
+- **Source of Truth:** GitHub repository
+- **Deployment Environment:** Manus workspace
+- **Version Management:** Follows TERP protocols (mandatory `version.json` updates)
+
+### Quick Start
+
+```bash
+# Pull latest code from GitHub
+git pull origin master
+
+# Test locally
+pnpm run dev
+
+# Deploy via Manus checkpoint
+# See DEPLOYMENT.md for full procedures
+```
+
+### Documentation
+
+- [DEPLOYMENT.md](./DEPLOYMENT.md) - Complete deployment procedures and workflows
+- [GITHUB_WORKFLOW.md](./GITHUB_WORKFLOW.md) - Git workflow and remote management
+- [PER_USER_CREDIT_SYSTEM.md](./docs/PER_USER_CREDIT_SYSTEM.md) - Per-user API key documentation
+- [TERP Development Protocols](https://github.com/EvanTenenbaum/TERP/blob/main/docs/DEVELOPMENT_PROTOCOLS.md) - Required development standards
+
 ## Roadmap
 
 ### High Priority
@@ -258,7 +290,7 @@ This is a private project for TERP. If you have access and want to contribute:
 - [ ] Implement Kanban drag-and-drop
 
 ### Future Enhancements
-- [ ] Per-user credit tracking
+- [x] Per-user credit tracking (COMPLETED v1.0.0)
 - [ ] Real-time collaboration
 - [ ] Export to PDF/CSV
 - [ ] Comments system

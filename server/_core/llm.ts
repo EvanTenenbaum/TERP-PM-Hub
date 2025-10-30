@@ -66,6 +66,11 @@ export type InvokeParams = {
   output_schema?: OutputSchema;
   responseFormat?: ResponseFormat;
   response_format?: ResponseFormat;
+  /**
+   * Optional API key for per-user credit usage.
+   * If provided, this key will be used instead of the system default.
+   */
+  apiKey?: string;
 };
 
 export type ToolCall = {
@@ -214,8 +219,8 @@ const resolveApiUrl = () =>
     ? `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/chat/completions`
     : "https://forge.manus.im/v1/chat/completions";
 
-const assertApiKey = () => {
-  if (!ENV.forgeApiKey) {
+const assertApiKey = (customApiKey?: string) => {
+  if (!customApiKey && !ENV.forgeApiKey) {
     throw new Error("OPENAI_API_KEY is not configured");
   }
 };
@@ -266,7 +271,8 @@ const normalizeResponseFormat = ({
 };
 
 export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
-  assertApiKey();
+  const apiKey = params.apiKey || ENV.forgeApiKey;
+  assertApiKey(apiKey);
 
   const {
     messages,
@@ -316,7 +322,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      authorization: `Bearer ${ENV.forgeApiKey}`,
+      authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify(payload),
   });

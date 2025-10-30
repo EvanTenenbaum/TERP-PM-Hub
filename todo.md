@@ -44,6 +44,17 @@
 - [ ] Create user documentation
 - [ ] Final QA
 
+## Per-User Credit System ✅
+- [x] Add manusApiKey and apiKeyUpdatedAt fields to users table
+- [x] Create encryption utilities for secure API key storage
+- [x] Create user API key helper functions
+- [x] Update LLM module to support per-user API keys
+- [x] Update all AI procedures to automatically use user's API key
+- [x] Create Settings page for API key management
+- [x] Add Settings route to app router
+- [x] Create comprehensive documentation
+- [x] Test TypeScript compilation
+
 ## Bugs
 (None yet)
 

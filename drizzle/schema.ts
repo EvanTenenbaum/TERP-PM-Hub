@@ -13,6 +13,16 @@ export const users = mysqlTable("users", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
+  /**
+   * User's Manus Forge API key for per-user credit usage.
+   * When set, AI operations will charge this user's Manus account instead of the project owner's.
+   * Stored encrypted for security.
+   */
+  manusApiKey: text("manusApiKey"),
+  /**
+   * Timestamp of when the API key was last updated.
+   */
+  apiKeyUpdatedAt: timestamp("apiKeyUpdatedAt"),
 });
 
 export type User = typeof users.$inferSelect;
