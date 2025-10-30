@@ -235,3 +235,4 @@
 - [ ] Remove remaining placeholders
 - [ ] Verify mobile responsiveness
 - [ ] Final smoke test all features
+- [x] Fix AI chat response rendering - extract 'response' field from JSON for user-friendly display

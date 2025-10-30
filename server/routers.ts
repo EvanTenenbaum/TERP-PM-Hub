@@ -250,14 +250,15 @@ export const appRouter = router({
           })
         });
 
-        const assistantMessage = typeof response.choices[0].message.content === "string" 
+        const rawContent = typeof response.choices[0].message.content === "string" 
           ? response.choices[0].message.content 
           : JSON.stringify(response.choices[0].message.content);
 
-        // For inbox agent, create PM item from structured response
+        // For inbox agent, create PM item from structured response and extract user-friendly message
+        let assistantMessage = rawContent;
         if (useStructured && conversation.agentType === 'inbox') {
           try {
-            const parsed = JSON.parse(assistantMessage);
+            const parsed = JSON.parse(rawContent);
             await db.upsertPMItem({
               itemId: `TERP-${parsed.type}-${Date.now()}`,
               type: parsed.type,
@@ -269,12 +270,16 @@ export const appRouter = router({
               updatedAt: new Date(),
               metadata: { conversationId: input.conversationId }
             });
+            
+            // Extract the user-friendly response field for display
+            assistantMessage = parsed.response || rawContent;
           } catch (e) {
             console.error('Failed to parse inbox item:', e);
+            // Keep raw content if parsing fails
           }
         }
 
-        // Save assistant message
+        // Save assistant message (user-friendly version for inbox, raw for others)
         await db.createMessage({
           conversationId: input.conversationId,
           role: "assistant",
