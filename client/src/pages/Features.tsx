@@ -228,7 +228,22 @@ Please implement this feature following the dev-brief requirements.`;
         )}
 
         <div className="grid gap-3 sm:gap-4">
-          {pmItems?.map((item) => (
+          {pmItems
+            ?.filter((item) => {
+              // Filter by status
+              if (filterStatus !== 'all' && item.status !== filterStatus) return false;
+              // Filter by search query
+              if (searchQuery) {
+                const query = searchQuery.toLowerCase();
+                return (
+                  item.title.toLowerCase().includes(query) ||
+                  item.itemId.toLowerCase().includes(query) ||
+                  (item.description && item.description.toLowerCase().includes(query))
+                );
+              }
+              return true;
+            })
+            .map((item) => (
             <Card key={item.id}>
               <CardHeader>
                 <div className="flex flex-col sm:flex-row items-start justify-between gap-3">

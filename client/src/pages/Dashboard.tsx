@@ -37,6 +37,7 @@ export default function Dashboard() {
   const features = pmItems?.filter((item) => item.type === "FEAT") || [];
   const ideas = pmItems?.filter((item) => item.type === "IDEA") || [];
   const bugs = pmItems?.filter((item) => item.type === "BUG") || [];
+  const clientFeedback = pmItems?.filter((item) => item.tags?.includes('client-feedback')) || [];
 
   const handleSync = () => {
     manualSync();
@@ -69,7 +70,7 @@ export default function Dashboard() {
         )}
 
         {/* Stats Cards - Mobile optimized grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Features</CardTitle>
@@ -112,6 +113,20 @@ export default function Dashboard() {
               <div className="text-2xl font-bold">{pmItems?.length || 0}</div>
               <p className="text-xs text-muted-foreground">All items</p>
             </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Client Feedback</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{clientFeedback.length}</div>
+              <p className="text-xs text-muted-foreground">Pending</p>
+            </CardContent>
+            <Link href="/feedback">
+              <Button variant="link" size="sm" className="w-full">View All</Button>
+            </Link>
           </Card>
         </div>
 
@@ -190,7 +205,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent className="space-y-2">
                 <Button asChild variant="outline" className="w-full justify-start">
-                  <a href="/TRAINING_GUIDE.md" target="_blank" rel="noopener noreferrer">
+                  <a href="/training.md" target="_blank" rel="noopener noreferrer">
                     <FileText className="w-4 h-4 mr-2" />
                     <span className="text-sm">📚 Help & Training Guide</span>
                   </a>

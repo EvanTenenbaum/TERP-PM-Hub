@@ -36,6 +36,13 @@
       "when": 1761800222131,
       "tag": "0004_reflective_ulik",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1761804995188,
+      "tag": "0005_lame_steel_serpent",
+      "breakpoints": true
     }
   ]
 }

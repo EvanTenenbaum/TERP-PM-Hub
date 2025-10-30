@@ -9,6 +9,7 @@ import { invokeLLM } from "./_core/llm";
 import { analyzeFeatureComplexity } from "./complexityAnalyzer";
 import { generateCode, loadSmartContext, createHandoffPackage } from "./codeGenerator";
 import { SelfRegisterSchema, processSelfRegistration } from "./selfRegister";
+import { generateImplementationPrompt, generateContinuationPrompt } from "./watchdog";
 
 export const appRouter = router({
   // Self-registration for Manus chats
@@ -129,6 +130,49 @@ export const appRouter = router({
         // TODO: Add cascade protection - check for dependencies
         await db.deletePMItem(input.id);
         return { success: true };
+      }),
+
+    // Convert inbox item to PRD using AI
+    convertToPRD: protectedProcedure
+      .input(z.object({
+        itemId: z.string(),
+        additionalContext: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const item = await db.getPMItemById(input.itemId);
+        if (!item) {
+          throw new Error(`PM item ${input.itemId} not found`);
+        }
+
+        // Import PRD generator
+        const { generatePRDHybrid, estimateLLMCost } = await import('./_core/llm-smart.js');
+
+        // Generate PRD
+        const prd = await generatePRDHybrid(
+          item.title + (item.description ? `\n\n${item.description}` : ''),
+          input.additionalContext
+        );
+
+        // Estimate cost (rough)
+        const cost = estimateLLMCost(
+          item.title + (item.description || ''),
+          prd,
+          'gemini-2.5-flash'
+        );
+
+        // Update item with PRD as description and change type to FEAT
+        await db.updatePMItem(item.id, {
+          description: prd,
+          type: 'FEAT',
+          status: 'backlog',
+          estimatedCost: cost,
+        });
+
+        return {
+          success: true,
+          prd,
+          estimatedCost: cost,
+        };
       }),
 
     // Enhance PM item with additional context using AI
@@ -599,6 +643,237 @@ Be specific, actionable, and consider TERP's existing architecture.`;
         
         return { success: true, itemId };
       }),
+  }),
+
+  // Implementation Queue
+  queue: router({
+    // Add PM item to implementation queue with LLM analysis
+    addToQueue: protectedProcedure
+      .input(z.object({
+        pmItemId: z.string(),
+        additionalContext: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        // Get the PM item
+        const item = await db.getPMItemById(input.pmItemId);
+        if (!item) {
+          throw new Error('PM item not found');
+        }
+
+        // Build rich context for LLM analysis
+        const allItems = await db.getAllPMItems();
+        const relatedItems = item.related ? 
+          allItems.filter(i => item.related?.includes(i.itemId)) : [];
+
+        // Use LLM to analyze and create structured work item
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: 'system',
+              content: `You are a technical PM assistant analyzing work items for implementation. Generate a detailed, structured work item ready for a Manus AI agent to implement.
+
+Provide:
+1. Diagnosis: What exactly needs to be built/fixed and why (technical analysis)
+2. Priority: critical/high/medium/low based on impact and urgency
+3. Estimated minutes: Realistic time to implement (aim for 60-90 min phases)
+4. Dependencies: PM item IDs that must be completed first
+5. QA requirements: How to verify it works (specific test cases)
+6. Implementation steps: Detailed, actionable steps for agent
+
+Be specific, technical, and actionable. Reference existing code patterns when relevant.`,
+            },
+            {
+              role: 'user',
+              content: `PM Item to Analyze:
+ID: ${item.itemId}
+Title: ${item.title}
+Description: ${item.description || 'No description'}
+Type: ${item.type}
+Status: ${item.status}
+Tags: ${item.tags?.join(', ') || 'None'}
+
+Related Items:
+${relatedItems.map(r => `- ${r.itemId}: ${r.title} (${r.status})`).join('\n') || 'None'}
+
+Additional Context:
+${input.additionalContext || 'None provided'}
+
+Project Context:
+Tech Stack: React 19, TypeScript, Tailwind CSS 4, tRPC, Drizzle ORM, MySQL
+Architecture: Component-based, type-safe, server-side rendering
+
+Analyze and create structured work item.`,
+            },
+          ],
+          response_format: {
+            type: 'json_schema',
+            json_schema: {
+              name: 'work_item',
+              strict: true,
+              schema: {
+                type: 'object',
+                properties: {
+                  diagnosis: { type: 'string' },
+                  priority: { type: 'string', enum: ['critical', 'high', 'medium', 'low'] },
+                  estimatedMinutes: { type: 'number' },
+                  dependencies: { type: 'array', items: { type: 'string' } },
+                  qaRequirements: { type: 'string' },
+                  implementationSteps: { type: 'array', items: { type: 'string' } },
+                },
+                required: ['diagnosis', 'priority', 'estimatedMinutes', 'dependencies', 'qaRequirements', 'implementationSteps'],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+
+        const content = response.choices[0].message.content;
+        const analysis = JSON.parse(typeof content === 'string' ? content : JSON.stringify(content));
+
+        // Create queue item
+        const queueItemId = await db.createQueueItem({
+          pmItemId: item.itemId,
+          title: item.title,
+          description: item.description || '',
+          diagnosis: analysis.diagnosis,
+          priority: analysis.priority as any,
+          estimatedMinutes: analysis.estimatedMinutes,
+          dependencies: JSON.stringify(analysis.dependencies) as any,
+          qaRequirements: analysis.qaRequirements,
+          implementationSteps: JSON.stringify(analysis.implementationSteps) as any,
+          status: 'queued',
+          queueOrder: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+
+        return {
+          success: true,
+          queueItemId,
+          analysis,
+        };
+      }),
+
+    // List all queue items
+    list: protectedProcedure.query(async () => {
+      return await db.getAllQueueItems();
+    }),
+
+    // Get single queue item
+    get: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getQueueItemById(input.id);
+      }),
+
+    // Update queue item
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        status: z.enum(['queued', 'in-progress', 'completed', 'blocked']).optional(),
+        queueOrder: z.number().optional(),
+        assignedTo: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...updates } = input;
+        return await db.updateQueueItem(id, updates as any);
+      }),
+
+    // Delete queue item
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteQueueItem(input.id);
+        return { success: true };
+      }),
+
+    // Start implementation with auto-scheduled continuation
+    startImplementation: protectedProcedure
+      .input(z.object({ queueItemId: z.number() }))
+      .mutation(async ({ input }) => {
+        const queueItem = await db.getQueueItemById(input.queueItemId);
+        if (!queueItem) {
+          throw new Error('Queue item not found');
+        }
+
+        // Generate implementation prompt with progress tracking
+        const implementationPrompt = generateImplementationPrompt(queueItem);
+        
+        // Generate continuation prompt
+        const continuationPrompt = generateContinuationPrompt(input.queueItemId, queueItem);
+
+        // Schedule implementation agent (60 min timeout)
+        // Note: Actual scheduling would use Manus schedule API
+        // For now, return prompts for manual scheduling
+        
+        // Update queue item status
+        await db.updateQueueItem(input.queueItemId, {
+          status: 'in-progress',
+          startedAt: new Date(),
+        } as any);
+
+        return {
+          scheduled: true,
+          implementationPrompt,
+          continuationPrompt,
+          implementationTask: `implement-${input.queueItemId}`,
+          continuationTask: `continue-${input.queueItemId}`,
+          instructions: `
+Schedule these two tasks:
+
+1. Implementation (60 min timeout):
+   Name: implement-${input.queueItemId}
+   Prompt: [see implementationPrompt]
+
+2. Continuation (scheduled 65 min after start):
+   Name: continue-${input.queueItemId}
+   Prompt: [see continuationPrompt]
+          `
+        };
+      }),
+
+    // Mark queue item as complete (called by agents)
+    markComplete: publicProcedure
+      .input(z.object({
+        queueItemId: z.number(),
+        completedBy: z.enum(['original', 'continuation']),
+      }))
+      .mutation(async ({ input }) => {
+        await db.updateQueueItem(input.queueItemId, {
+          status: 'completed',
+          completedAt: new Date(),
+          completedBy: input.completedBy,
+        } as any);
+
+        return { success: true };
+      }),
+
+    // Export queue to work-items.json format
+    exportToWorkItems: protectedProcedure.query(async () => {
+      const queueItems = await db.getAllQueueItems();
+      
+      const workItems = {
+        version: '1.0',
+        project: 'TERP PM Hub',
+        generated: new Date().toISOString(),
+        items: queueItems.map(item => ({
+          id: item.pmItemId,
+          title: item.title,
+          description: item.description,
+          diagnosis: item.diagnosis,
+          priority: item.priority,
+          estimatedMinutes: item.estimatedMinutes,
+          dependencies: typeof item.dependencies === 'string' ? 
+            JSON.parse(item.dependencies) : (item.dependencies || []),
+          qaRequirements: item.qaRequirements,
+          steps: typeof item.implementationSteps === 'string' ? 
+            JSON.parse(item.implementationSteps) : (item.implementationSteps || []),
+          status: item.status,
+        })),
+      };
+
+      return workItems;
+    }),
   }),
 });
 

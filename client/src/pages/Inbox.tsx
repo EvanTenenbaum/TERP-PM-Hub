@@ -42,6 +42,26 @@ export default function Inbox() {
   });
   
   const analyzeMutation = trpc.devAgent.analyzeComplexity.useMutation();
+  
+  const addToQueueMutation = trpc.queue.addToQueue.useMutation({
+    onSuccess: (data) => {
+      toast.success('Item added to implementation queue with AI analysis');
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(`Failed to add to queue: ${error.message}`);
+    }
+  });
+
+  const convertToPRDMutation = trpc.pmItems.convertToPRD.useMutation({
+    onSuccess: (data) => {
+      toast.success(`PRD generated! Estimated cost: $${data.estimatedCost.toFixed(4)}`);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(`Failed to generate PRD: ${error.message}`);
+    }
+  });
 
   if (!isAuthenticated) {
     return <div className="flex items-center justify-center min-h-screen">Please sign in</div>;
@@ -119,20 +139,23 @@ export default function Inbox() {
     }
   }
 
-  async function handleQuickFix(item: ItemWithRecommendation) {
-    toast.info('Analyzing and generating fix...');
-    // This would trigger LLM to generate a quick fix
-    // For now, just show toast
-    toast.success('Quick fix generation started! Check back in a moment.');
+  async function handleAddToQueue(item: ItemWithRecommendation) {
+    toast.info('Analyzing item with AI...');
+    await addToQueueMutation.mutateAsync({
+      pmItemId: item.itemId,
+      additionalContext: additionalContext || undefined,
+    });
   }
 
-  function handleFullAgent(item: ItemWithRecommendation) {
-    const context = `Fix ${item.itemId}: ${item.title}\n\nDescription: ${item.description}\n\nContext: ${additionalContext || 'None'}`;
-    navigator.clipboard.writeText(context);
-    toast.success('Context copied! Open new Manus chat and paste.');
+  async function handleConvertToFeature(item: ItemWithRecommendation) {
+    toast.info('Generating PRD with AI...');
+    await convertToPRDMutation.mutateAsync({
+      itemId: item.itemId,
+      additionalContext: additionalContext || undefined,
+    });
   }
 
-  function handleConvertToFeature(item: ItemWithRecommendation) {
+  function handleConvertToFeatureOld(item: ItemWithRecommendation) {
     updateMutation.mutate({
       id: item.id,
       type: 'FEAT',
@@ -260,64 +283,31 @@ export default function Inbox() {
                   </Dialog>
 
                   {/* Recommended Action */}
-                  {item.recommendation === 'llm-quick-fix' && (
-                    <Button 
-                      size="sm" 
-                      onClick={() => handleQuickFix(item)}
-                      className="gap-2"
-                    >
-                      <Zap className="w-4 h-4" />
-                      Quick Fix with LLM
-                    </Button>
-                  )}
-
-                  {item.recommendation === 'full-agent' && (
-                    <Button 
-                      size="sm" 
-                      onClick={() => handleFullAgent(item)}
-                      className="gap-2"
-                    >
-                      <Users className="w-4 h-4" />
-                      Develop with Manus Agent
-                    </Button>
-                  )}
+                  {/* Removed old buttons - now using unified Add to Queue */}
 
                   {item.recommendation === 'convert-to-feature' && (
                     <Button 
                       size="sm" 
                       onClick={() => handleConvertToFeature(item)}
                       className="gap-2"
+                      disabled={convertToPRDMutation.isPending}
                     >
                       <Sparkles className="w-4 h-4" />
-                      Convert to Feature
+                      {convertToPRDMutation.isPending ? 'Generating PRD...' : 'Convert to PRD'}
                     </Button>
                   )}
 
                   {/* Alternative Actions */}
-                  {item.recommendation !== 'llm-quick-fix' && (
-                    <Button 
-                      variant="outline"
-                      size="sm" 
-                      onClick={() => handleQuickFix(item)}
-                      className="gap-2"
-                    >
-                      <Zap className="w-4 h-4" />
-                      Try Quick Fix
-                    </Button>
-                  )}
-
-                  {item.recommendation !== 'full-agent' && (
-                    <Button 
-                      variant="outline"
-                      size="sm" 
-                      onClick={() => handleFullAgent(item)}
-                      className="gap-2"
-                    >
-                      <Users className="w-4 h-4" />
-                      Full Agent
-                    </Button>
-                  )}
-                </div>
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    onClick={() => handleAddToQueue(item)}
+                    className="gap-2"
+                    disabled={addToQueueMutation.isPending}
+                  >
+                    <Zap className="w-4 h-4" />
+                    {addToQueueMutation.isPending ? 'Adding...' : 'Add to Queue'}
+                  </Button>                </div>
               </CardContent>
             </Card>
           ))

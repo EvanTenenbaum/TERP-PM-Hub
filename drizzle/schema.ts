@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, json } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, json, double, float, decimal } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -85,6 +85,23 @@ export const pmItems = mysqlTable("pmItems", {
   }>(),
   /** Last sync timestamp */
   lastSyncedAt: timestamp("lastSyncedAt"),
+  
+  /** Roadmap Management */
+  roadmapPosition: int("roadmapPosition"), // Order in roadmap (null = not in roadmap)
+  roadmapStatus: mysqlEnum("roadmapStatus", ["not-started", "queued", "in-progress", "complete"]).default("not-started"),
+  estimatedHours: double("estimatedHours"), // AI-estimated implementation time
+  estimatedCost: double("estimatedCost"), // AI-estimated LLM cost in dollars
+  
+  /** Impact Analysis */
+  backendImpact: json("backendImpact").$type<{models: string[], services: string[], apis: string[]}>(),
+  frontendImpact: json("frontendImpact").$type<{pages: string[], components: string[], hooks: string[]}>(),
+  databaseImpact: json("databaseImpact").$type<{tables: string[], migrations: string[]}>(),
+  
+  /** Dependencies */
+  dependsOn: json("dependsOn").$type<{itemId: string, type: 'hard'|'soft'|'conflict', aiConfidence: number, pmConfirmed: boolean}[]>(),
+  blocks: json("blocks").$type<string[]>(), // Features blocked by this one
+  affectedBy: json("affectedBy").$type<string[]>(), // Features that need updates when this is added
+  
   createdAt: timestamp("createdAt").notNull(),
   updatedAt: timestamp("updatedAt").notNull(),
 });
@@ -139,7 +156,7 @@ export const implementationQueue = mysqlTable("implementationQueue", {
   /** QA requirements and acceptance criteria */
   qaRequirements: text("qaRequirements").notNull(),
   /** Step-by-step implementation guide */
-  implementationSteps: json("implementationSteps").$type<string[]>().notNull(),
+  implementationSteps: json("implementationSteps").$type<{step: number; description: string}[]>().notNull(),
   /** Current status */
   status: mysqlEnum("status", ["queued", "in-progress", "completed", "blocked"]).default("queued").notNull(),
   /** Order in queue (for manual reordering) */

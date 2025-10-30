@@ -1,0 +1,13 @@
+{
+  "query": "SHOW TABLES LIKE 'implementation%'",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VCDwJ3cd5ekhng.3e7a946157db --database 8otV3JiBgjAxoTBQ4KgCk4 --execute SHOW TABLES LIKE 'implementation%'",
+  "rows": [
+    {
+      "Tables_in_8otV3JiBgjAxoTBQ4KgCk4 (implementation%)": "implementationQueue"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_8otV3JiBgjAxoTBQ4KgCk4 (implementation%)\nimplementationQueue\n",
+  "stderr": "",
+  "execution_time_ms": 46
+}

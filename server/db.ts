@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, pmItems, InsertPmItem, conversations, InsertConversation, messages, InsertMessage, githubSync, InsertGithubSync } from "../drizzle/schema";
+import { InsertUser, users, pmItems, InsertPmItem, conversations, InsertConversation, messages, InsertMessage, githubSync, InsertGithubSync, implementationQueue, InsertImplementationQueueItem } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -250,6 +250,76 @@ export async function getLatestSync(syncType: string) {
     return null;
   }
 
-  const result = await db.select().from(githubSync).where(eq(githubSync.syncType, syncType)).orderBy(githubSync.startedAt).limit(1);
+  const result = await db.select().from(githubSync).where(eq(githubSync.syncType, syncType)).orderBy(desc(githubSync.startedAt)).limit(1);
   return result.length > 0 ? result[0] : null;
+}
+
+// Implementation Queue
+
+export async function createQueueItem(item: InsertImplementationQueueItem) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot create queue item: database not available");
+    return null;
+  }
+
+  const result = await db.insert(implementationQueue).values(item);
+  return result[0].insertId;
+}
+
+export async function getAllQueueItems() {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get queue items: database not available");
+    return [];
+  }
+
+  return await db.select().from(implementationQueue);
+}
+
+export async function getQueueItemById(id: number) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get queue item: database not available");
+    return null;
+  }
+
+  const result = await db.select().from(implementationQueue).where(eq(implementationQueue.id, id)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function updateQueueItem(id: number, updates: Partial<InsertImplementationQueueItem>) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot update queue item: database not available");
+    return null;
+  }
+
+  await db.update(implementationQueue).set({
+    ...updates,
+    updatedAt: new Date()
+  }).where(eq(implementationQueue.id, id));
+  
+  const result = await db.select().from(implementationQueue).where(eq(implementationQueue.id, id)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function deleteQueueItem(id: number) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot delete queue item: database not available");
+    return;
+  }
+
+  await db.delete(implementationQueue).where(eq(implementationQueue.id, id));
+}
+
+export async function getQueueItemsByStatus(status: string) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get queue items by status: database not available");
+    return [];
+  }
+
+  return await db.select().from(implementationQueue).where(eq(implementationQueue.status, status as any));
 }

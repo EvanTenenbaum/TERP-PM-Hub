@@ -24,6 +24,30 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // Split large vendor libraries into separate chunks
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'react-vendor';
+            }
+            if (id.includes('@trpc') || id.includes('@tanstack/react-query')) {
+              return 'trpc-vendor';
+            }
+            if (id.includes('@radix-ui')) {
+              return 'ui-vendor';
+            }
+            if (id.includes('mermaid')) {
+              return 'mermaid';
+            }
+            // All other node_modules go into vendor chunk
+            return 'vendor';
+          }
+        },
+      },
+    },
   },
   server: {
     host: true,
