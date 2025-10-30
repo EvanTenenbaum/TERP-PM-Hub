@@ -7,7 +7,10 @@ import { Progress } from "@/components/ui/progress";
 import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
-import { ArrowLeft, Code, Sparkles, ExternalLink, AlertCircle } from "lucide-react";
+import { ArrowLeft, Code, Sparkles, ExternalLink, AlertCircle, Search } from "lucide-react";
+import BulkActions from '@/components/BulkActions';
+import ExportData from '@/components/ExportData';
+import { Input } from '@/components/ui/input';
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -37,6 +40,9 @@ export default function Features() {
   const [complexity, setComplexity] = useState<any>(null);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationStage, setGenerationStage] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [filterStatus, setFilterStatus] = useState<string>('all');
 
   const analyzeComplexity = trpc.devAgent.analyzeComplexity.useMutation();
   const generateCode = trpc.devAgent.generateCode.useMutation();
@@ -161,7 +167,47 @@ Please implement this feature following the dev-brief requirements.`;
         </div>
       </header>
 
-      <main className="container py-4 sm:py-8">
+      <main className="container py-4 sm:py-8 space-y-4">
+        {/* Search & Filter */}
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search features, ideas, bugs..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <div className="flex gap-2">
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="px-3 py-2 border rounded-md text-sm"
+            >
+              <option value="all">All Status</option>
+              <option value="inbox">Inbox</option>
+              <option value="backlog">Backlog</option>
+              <option value="planned">Planned</option>
+              <option value="in-progress">In Progress</option>
+              <option value="completed">Completed</option>
+              <option value="on-hold">On Hold</option>
+              <option value="archived">Archived</option>
+            </select>
+            <ExportData items={pmItems || []} filename="terp-features" />
+          </div>
+        </div>
+
+        {/* Bulk Actions */}
+        {pmItems && pmItems.length > 0 && (
+          <BulkActions
+            items={pmItems}
+            selectedIds={selectedIds}
+            onSelectionChange={setSelectedIds}
+            onActionComplete={() => {}}
+          />
+        )}
+
         {itemsLoading && <p className="text-center">Loading items...</p>}
 
         {!itemsLoading && pmItems && pmItems.length === 0 && (
