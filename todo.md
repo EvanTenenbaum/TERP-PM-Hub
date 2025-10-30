@@ -60,3 +60,18 @@
 - [x] Mobile-first responsive design for all pages
 - [x] Reorganize dashboard - Idea Inbox chat at the top
 - [x] Quick capture interface for ideas
+
+## Hybrid Dev Agent Feature
+- [x] QA and improve hybrid dev agent design
+- [x] Build quick code generation for simple features
+- [x] Build "Develop with Manus Agent" launcher
+- [x] Implement seamless handoff between quick gen and full agent
+- [x] Add feature complexity detection
+- [x] QA entire PM Hub system end-to-end
+
+## Priority 1 Fixes (Before Production)
+- [ ] Wire up Quick Capture to AI chat
+- [ ] Add GitHub token setup flow  
+- [ ] Connect timeline to real PM data
+- [ ] Fix dashboard stats to show real counts
+- [ ] Add error boundaries to all pages

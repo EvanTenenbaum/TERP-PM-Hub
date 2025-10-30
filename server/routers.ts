@@ -6,6 +6,8 @@ import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 import * as github from "./github";
 import { invokeLLM } from "./_core/llm";
+import { analyzeFeatureComplexity } from "./complexityAnalyzer";
+import { generateCode, loadSmartContext, createHandoffPackage } from "./codeGenerator";
 
 export const appRouter = router({
   system: systemRouter,
@@ -207,6 +209,47 @@ export const appRouter = router({
         return {
           message: assistantMessage,
         };
+      }),
+  }),
+
+  // Dev Agent
+  devAgent: router({
+    analyzeComplexity: protectedProcedure
+      .input(z.object({ devBrief: z.string() }))
+      .mutation(async ({ input }) => {
+        const complexity = await analyzeFeatureComplexity(input.devBrief);
+        return complexity;
+      }),
+    
+    generateCode: protectedProcedure
+      .input(z.object({ 
+        featureId: z.string(),
+        githubPath: z.string()
+      }))
+      .mutation(async ({ input }) => {
+        const context = await loadSmartContext(input.featureId, input.githubPath);
+        const result = await generateCode(input.featureId, context, undefined);
+        return result;
+      }),
+    
+    createHandoff: protectedProcedure
+      .input(z.object({
+        featureId: z.string(),
+        generatedCode: z.record(z.string(), z.string()).optional(),
+        issues: z.array(z.object({
+          type: z.enum(['syntax', 'type', 'import', 'lint']),
+          message: z.string(),
+          line: z.number().optional(),
+          autoFixable: z.boolean()
+        }))
+      }))
+      .mutation(async ({ input }) => {
+        const handoffPrompt = await createHandoffPackage(
+          input.featureId,
+          input.generatedCode as Record<string, string> | undefined,
+          input.issues
+        );
+        return { handoffPrompt };
       }),
   }),
 });
