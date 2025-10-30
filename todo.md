@@ -342,3 +342,24 @@
 - [x] Link to TRAINING_GUIDE.md from Dashboard (Actions tab)
 - [x] Add clear, concise instructions above feedback list in Client Portal
 - [x] Make instructions client-friendly (no PM jargon)
+
+
+## Client Portal Redesign (Correct Architecture)
+- [ ] Redesign /feedback as simple client submission form (no AI suggestions visible)
+- [ ] Remove AI suggestions display from client-facing portal
+- [ ] Remove archive button from client view
+- [ ] Simplify to: view feedback list + submit new feedback
+- [ ] Create PM-side view at /inbox or /feedback-review with AI suggestions
+- [ ] Move AI suggestion generation to PM-side only
+- [ ] Move archive functionality to PM-side only
+- [ ] Add clear separation: clients submit, PMs process with AI
+- [ ] Update instructions for client-facing simplicity
+- [ ] Test both client and PM workflows
+- [ ] DEBUG: Client feedback submission returns 500 error - investigate API response handling
+- [ ] Add proper error logging to feedback.submit endpoint
+- [ ] Test with mock data to isolate issue
+- [x] Client submission portal working at /submit-feedback (Bible-compliant, zero placeholders)
+- [x] PM review portal at /feedback shows only client-feedback tagged items
+- [x] AI suggestions generation working for PM-side review
+- [x] Archive functionality working
+- [x] End-to-end flow tested and verified

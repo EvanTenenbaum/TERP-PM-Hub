@@ -47,8 +47,10 @@ export default function FeedbackPortal() {
     );
   }
 
-  const activeItems = feedbackItems?.filter(item => item.status !== 'archived') || [];
-  const archivedItems = feedbackItems?.filter(item => item.status === 'archived') || [];
+  // Filter to show only client-submitted feedback
+  const clientItems = feedbackItems?.filter(item => item.tags?.includes('client-feedback')) || [];
+  const activeItems = clientItems.filter(item => item.status !== 'archived');
+  const archivedItems = clientItems.filter(item => item.status === 'archived');
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -57,9 +59,9 @@ export default function FeedbackPortal() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Client Feedback Portal</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Client Feedback Review</h1>
               <p className="mt-1 text-sm text-gray-500">
-                View and manage customer feedback with AI-powered suggestions
+                Review client submissions and get AI suggestions for implementation
               </p>
             </div>
             <button

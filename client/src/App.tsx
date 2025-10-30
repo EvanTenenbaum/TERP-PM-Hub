@@ -10,6 +10,7 @@ import Chat from "./pages/Chat";
 import Features from "./pages/Features";
 import Inbox from "./pages/Inbox";
 import FeedbackPortal from "./pages/FeedbackPortal";
+import ClientFeedback from "./pages/ClientFeedback";
 import CommandPalette from "./components/CommandPalette";
 
 function Router() {
@@ -20,6 +21,7 @@ function Router() {
       <Route path={"/inbox"} component={Inbox} />
       <Route path={"/chat/:agentType?"} component={Chat} />
       <Route path={"/features"} component={Features} />
+      <Route path={"/submit-feedback"} component={ClientFeedback} />
       <Route path={"/feedback"} component={FeedbackPortal} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />

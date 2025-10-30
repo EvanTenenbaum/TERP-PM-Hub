@@ -456,6 +456,36 @@ Be specific, actionable, and consider TERP's existing architecture.`;
         
         return suggestions;
       }),
+    
+    // Client-facing submission endpoint (no auth required for public feedback)
+    submit: publicProcedure
+      .input(z.object({
+        feedback: z.string().min(10, 'Feedback must be at least 10 characters'),
+      }))
+      .mutation(async ({ input }) => {
+        // Create PM item directly from client feedback (simplified, working approach)
+        const itemId = `TERP-IDEA-${Date.now()}`;
+        const now = new Date();
+        
+        // Extract first 60 chars for title, rest for description
+        const title = input.feedback.length > 60 
+          ? input.feedback.substring(0, 57) + '...'
+          : input.feedback;
+        
+        await db.upsertPMItem({
+          itemId,
+          title,
+          description: input.feedback,
+          type: 'IDEA', // Default to IDEA, PM can reclassify
+          status: 'inbox',
+          priority: 'medium',
+          tags: ['client-feedback'],
+          createdAt: now,
+          updatedAt: now,
+        });
+        
+        return { success: true, itemId };
+      }),
   }),
 });
 
