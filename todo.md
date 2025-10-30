@@ -75,3 +75,13 @@
 - [ ] Connect timeline to real PM data
 - [ ] Fix dashboard stats to show real counts
 - [ ] Add error boundaries to all pages
+
+
+## TERP Codebase Analysis & Population
+- [x] Analyze entire TERP codebase structure
+- [x] Extract existing features from code
+- [x] Find and parse roadmap documents
+- [x] Import all historical context
+- [x] Create PM items for all discovered features (56 items)
+- [ ] Generate dev-briefs for existing features
+- [ ] Populate timeline with real data
