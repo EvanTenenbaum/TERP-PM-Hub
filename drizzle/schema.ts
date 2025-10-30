@@ -116,6 +116,45 @@ export type GithubSync = typeof githubSync.$inferSelect;
 export type InsertGithubSync = typeof githubSync.$inferInsert;
 
 /**
+ * Implementation Queue
+ * Structured work items ready for agent implementation
+ * All development tasks flow through this queue before going to Manus agent
+ */
+export const implementationQueue = mysqlTable("implementationQueue", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Reference to original PM item */
+  pmItemId: varchar("pmItemId", { length: 64 }).notNull(),
+  /** Work item title */
+  title: varchar("title", { length: 500 }).notNull(),
+  /** Detailed description */
+  description: text("description").notNull(),
+  /** LLM-generated diagnosis of what needs to be done */
+  diagnosis: text("diagnosis").notNull(),
+  /** Priority level (auto-calculated + user-adjustable) */
+  priority: mysqlEnum("priority", ["critical", "high", "medium", "low"]).notNull(),
+  /** Estimated implementation time in minutes */
+  estimatedMinutes: int("estimatedMinutes").notNull(),
+  /** Dependencies (array of pmItemIds that must be completed first) */
+  dependencies: json("dependencies").$type<string[]>(),
+  /** QA requirements and acceptance criteria */
+  qaRequirements: text("qaRequirements").notNull(),
+  /** Step-by-step implementation guide */
+  implementationSteps: json("implementationSteps").$type<string[]>().notNull(),
+  /** Current status */
+  status: mysqlEnum("status", ["queued", "in-progress", "completed", "blocked"]).default("queued").notNull(),
+  /** Order in queue (for manual reordering) */
+  queueOrder: int("queueOrder").default(0),
+  /** Optional assignment for team features */
+  assignedTo: varchar("assignedTo", { length: 64 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  completedAt: timestamp("completedAt"),
+});
+
+export type ImplementationQueueItem = typeof implementationQueue.$inferSelect;
+export type InsertImplementationQueueItem = typeof implementationQueue.$inferInsert;
+
+/**
  * User preferences and settings
  */
 export const userPreferences = mysqlTable("userPreferences", {

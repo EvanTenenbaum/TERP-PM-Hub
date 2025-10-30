@@ -8,7 +8,7 @@ import { useAutoSync } from "@/hooks/useAutoSync";
 import { Link } from "wouter";
 import { MessageSquare, FileText, Bug, Lightbulb, RefreshCw, TrendingUp } from "lucide-react";
 import QuickCapture from "@/components/QuickCapture";
-import Timeline from "@/components/Timeline";
+import KanbanBoard from "@/components/KanbanBoard";
 import InboxSection from "@/components/InboxSection";
 import ActivityFeed from "@/components/ActivityFeed";
 
@@ -122,7 +122,7 @@ export default function Dashboard() {
         <Tabs defaultValue="agents" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="agents">AI Agents</TabsTrigger>
-            <TabsTrigger value="timeline">Timeline</TabsTrigger>
+            <TabsTrigger value="kanban">Kanban</TabsTrigger>
             <TabsTrigger value="actions">Actions</TabsTrigger>
           </TabsList>
 
@@ -155,20 +155,20 @@ export default function Dashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="timeline" className="mt-4">
+          <TabsContent value="kanban" className="mt-4">
             <Card>
               <CardHeader>
                 <CardTitle className="text-base sm:text-lg flex items-center gap-2">
                   <TrendingUp className="w-5 h-5" />
-                  Feature Timeline & Dependencies
+                  Kanban Board
                 </CardTitle>
                 <CardDescription className="text-sm">
-                  Visual representation of your features and their relationships
+                  Drag and drop to manage your features, ideas, and bugs. Click cards to add context with AI.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {pmItems && pmItems.length > 0 ? (
-                  <Timeline items={pmItems} />
+                  <KanbanBoard />
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <p>No items to display. Sync from GitHub to load your PM data.</p>

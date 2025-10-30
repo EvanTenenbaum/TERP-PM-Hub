@@ -130,6 +130,119 @@ export const appRouter = router({
         await db.deletePMItem(input.id);
         return { success: true };
       }),
+
+    // Enhance PM item with additional context using AI
+    enhanceWithContext: protectedProcedure
+      .input(z.object({
+        itemId: z.string().optional(),
+        id: z.number().optional(),
+        context: z.string().min(10, 'Context must be at least 10 characters'),
+      }))
+      .mutation(async ({ input }) => {
+        // Support both itemId (string) and id (number) for flexibility
+        let item;
+        if (input.itemId) {
+          item = await db.getPMItemById(input.itemId);
+        } else if (input.id) {
+          // Get all items and find by numeric ID
+          const allItems = await db.getAllPMItems();
+          item = allItems.find(i => i.id === input.id);
+        } else {
+          throw new Error('Either itemId or id must be provided');
+        }
+
+        if (!item) {
+          throw new Error('Item not found');
+        }
+
+        // Use LLM to analyze original item + new context and generate improvements
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: 'system',
+              content: `You are a product management AI assistant. Analyze the original PM item and additional context provided by the user. Generate an enhanced version with:
+1. Improved, more detailed description incorporating the new context
+2. Recommended priority (low, medium, high, critical)
+3. Suggested related items (array of item IDs if applicable)
+4. Recommended status change if needed
+5. Suggested tags to add
+
+Return JSON only with: enhancedDescription, priority, relatedItems (array), suggestedStatus, suggestedTags (array), reasoning (brief explanation of changes).`,
+            },
+            {
+              role: 'user',
+              content: `Original Item:
+Title: ${item.title}
+Description: ${item.description || 'No description'}
+Type: ${item.type}
+Current Priority: ${item.priority || 'Not set'}
+Current Status: ${item.status}
+Current Tags: ${item.tags?.join(', ') || 'None'}
+Current Related Items: ${item.related?.join(', ') || 'None'}
+
+Additional Context:
+${input.context}
+
+Please enhance this item based on the new context.`,
+            },
+          ],
+          response_format: {
+            type: 'json_schema',
+            json_schema: {
+              name: 'enhanced_item',
+              strict: true,
+              schema: {
+                type: 'object',
+                properties: {
+                  enhancedDescription: { type: 'string' },
+                  priority: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
+                  relatedItems: { type: 'array', items: { type: 'string' } },
+                  suggestedStatus: { type: 'string', enum: ['inbox', 'backlog', 'planned', 'in-progress', 'completed', 'on-hold', 'archived'] },
+                  suggestedTags: { type: 'array', items: { type: 'string' } },
+                  reasoning: { type: 'string' },
+                },
+                required: ['enhancedDescription', 'priority', 'relatedItems', 'suggestedStatus', 'suggestedTags', 'reasoning'],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+
+        const content = response.choices[0].message.content;
+        const enhanced = JSON.parse(typeof content === 'string' ? content : JSON.stringify(content));
+
+        // Update the item with AI enhancements
+        const updates: any = {
+          description: enhanced.enhancedDescription,
+          priority: enhanced.priority as any,
+        };
+        
+        // Add related items if provided
+        if (enhanced.relatedItems.length > 0) {
+          updates.related = enhanced.relatedItems;
+        }
+        
+        // Merge suggested tags with existing tags
+        if (enhanced.suggestedTags.length > 0) {
+          const existingTags = item.tags || [];
+          const allTags = [...existingTags, ...enhanced.suggestedTags];
+          const uniqueTags = Array.from(new Set(allTags));
+          updates.tags = uniqueTags;
+        }
+        
+        // Only update status if it's a meaningful change
+        if (enhanced.suggestedStatus !== item.status) {
+          updates.status = enhanced.suggestedStatus as any;
+        }
+
+        await db.updatePMItem(item.id, updates);
+
+        return {
+          success: true,
+          enhanced,
+          itemId: item.itemId,
+        };
+      }),
   }),
 
   // Conversations

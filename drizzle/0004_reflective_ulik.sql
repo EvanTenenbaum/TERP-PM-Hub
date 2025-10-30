@@ -1,0 +1,1 @@
+ALTER TABLE `implementationQueue` MODIFY COLUMN `dependencies` json;

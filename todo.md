@@ -363,3 +363,54 @@
 - [x] AI suggestions generation working for PM-side review
 - [x] Archive functionality working
 - [x] End-to-end flow tested and verified
+
+
+## Replace Timeline with Kanban Board
+- [ ] Remove Timeline tab and component
+- [ ] Create Kanban board component with columns (Inbox, Backlog, Planned, In Progress, Completed)
+- [ ] Make cards draggable between columns (updates status)
+- [ ] Make cards clickable to show detail modal
+- [ ] Add context field in detail modal with AI enhancement
+- [ ] Connect context field to LLM: analyze original + context → improve description, adjust complexity/priority/dependencies
+- [ ] Show before/after comparison when AI processes context
+- [ ] Auto-update item with AI improvements after context submission
+- [ ] Show all PM item info in modal (title, description, tags, priority, dependencies)
+- [ ] Add action buttons in modal (Edit, Delete, Archive, Convert to Feature, etc.)
+- [ ] Ensure drag-and-drop updates database
+- [ ] Test all interactions
+- [ ] Bible-compliant: zero placeholders, fully functional
+
+## Fix "Try Quick Fix" Placeholder (Bible Violation)
+- [ ] Remove placeholder toast in handleQuickFix
+- [ ] Create quickFix tRPC endpoint: LLM fully identifies issue, generates complete solution/fix
+- [ ] Add implementation queue table in database
+- [ ] Quick Fix adds diagnosed item + solution to implementation queue
+- [ ] Full Agent can pull from queue to implement
+- [ ] Show success message with diagnosis summary
+- [ ] Test end-to-end
+
+## Add Context Feature (Kanban)
+- [ ] Create enhanceWithContext tRPC endpoint
+- [ ] LLM analyzes original + context → improves description, adjusts complexity/priority/dependencies
+- [ ] Update KanbanBoard detail modal to call endpoint
+- [ ] Show before/after comparison
+- [ ] Test end-to-end
+
+
+## Implementation Queue System (NEW - Based on TERP Work Queue)
+- [ ] Create implementationQueue table in database schema
+- [ ] Fields: id, pmItemId, title, description, diagnosis, priority, estimatedMinutes, dependencies, qaRequirements, status, createdAt
+- [ ] Add tRPC router for queue operations (add, list, update, delete)
+- [ ] Update "Try Quick Fix" to add item to queue with LLM diagnosis
+- [ ] Create /queue page to view and manage implementation queue
+- [ ] Show queue items with priority, dependencies, estimated time
+- [ ] Allow marking items as in-progress, completed
+- [ ] Export queue to work-items.json format for Manus agent
+- [ ] Test end-to-end: Inbox → Quick Fix → Queue → Export
+
+## FIX CRITICAL BUG: Kanban Tab Not Rendering
+- [ ] Debug why Kanban TabsContent not showing
+- [ ] Verify KanbanBoard component imports correctly
+- [ ] Test tab switching works
+- [ ] Verify cards are clickable and modal opens
+- [x] Create implementationQueue table in database (created via SQL)

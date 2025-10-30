@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `implementationQueue` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `pmItemId` varchar(64) NOT NULL,\n  `title` varchar(500) NOT NULL,\n  `description` text NOT NULL,\n  `diagnosis` text NOT NULL,\n  `priority` enum('critical','high','medium','low') NOT NULL,\n  `estimatedMinutes` int NOT NULL,\n  `dependencies` json,\n  `qaRequirements` text NOT NULL,\n  `implementationSteps` json NOT NULL,\n  `status` enum('queued','in-progress','completed','blocked') NOT NULL DEFAULT 'queued',\n  `queueOrder` int DEFAULT 0,\n  `assignedTo` varchar(64),\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n  `completedAt` timestamp NULL,\n  CONSTRAINT `implementationQueue_id` PRIMARY KEY(`id`)\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VCDwJ3cd5ekhng.3e7a946157db --database 8otV3JiBgjAxoTBQ4KgCk4 --execute CREATE TABLE IF NOT EXISTS `implementationQueue` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `pmItemId` varchar(64) NOT NULL,\n  `title` varchar(500) NOT NULL,\n  `description` text NOT NULL,\n  `diagnosis` text NOT NULL,\n  `priority` enum('critical','high','medium','low') NOT NULL,\n  `estimatedMinutes` int NOT NULL,\n  `dependencies` json,\n  `qaRequirements` text NOT NULL,\n  `implementationSteps` json NOT NULL,\n  `status` enum('queued','in-progress','completed','blocked') NOT NULL DEFAULT 'queued',\n  `queueOrder` int DEFAULT 0,\n  `assignedTo` varchar(64),\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n  `completedAt` timestamp NULL,\n  CONSTRAINT `implementationQueue_id` PRIMARY KEY(`id`)\n)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 226
+}

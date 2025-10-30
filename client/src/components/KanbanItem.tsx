@@ -7,9 +7,10 @@ import { FileText, Lightbulb, Bug, Sparkles, GripVertical } from 'lucide-react';
 interface KanbanItemProps {
   item: any;
   isDragging?: boolean;
+  onClick?: () => void;
 }
 
-export default function KanbanItem({ item, isDragging }: KanbanItemProps) {
+export default function KanbanItem({ item, isDragging, onClick }: KanbanItemProps) {
   const {
     attributes,
     listeners,
@@ -49,9 +50,16 @@ export default function KanbanItem({ item, isDragging }: KanbanItemProps) {
     <Card
       ref={setNodeRef}
       style={style}
-      className={`cursor-grab active:cursor-grabbing ${isDragging ? 'shadow-lg' : ''}`}
+      className={`cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow ${isDragging ? 'shadow-lg' : ''}`}
       {...attributes}
       {...listeners}
+      onClick={(e) => {
+        // Only trigger onClick if not dragging
+        if (!isSortableDragging && onClick) {
+          e.stopPropagation();
+          onClick();
+        }
+      }}
     >
       <CardContent className="p-3 space-y-2">
         <div className="flex items-start gap-2">
