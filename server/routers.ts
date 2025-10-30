@@ -8,8 +8,17 @@ import * as github from "./github";
 import { invokeLLM } from "./_core/llm";
 import { analyzeFeatureComplexity } from "./complexityAnalyzer";
 import { generateCode, loadSmartContext, createHandoffPackage } from "./codeGenerator";
+import { SelfRegisterSchema, processSelfRegistration } from "./selfRegister";
 
 export const appRouter = router({
+  // Self-registration for Manus chats
+  selfRegister: router({
+    register: publicProcedure
+      .input(SelfRegisterSchema)
+      .mutation(async ({ input }) => {
+        return await processSelfRegistration(input);
+      }),
+  }),
   system: systemRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),

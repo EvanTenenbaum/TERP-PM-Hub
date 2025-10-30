@@ -141,8 +141,8 @@
 - [x] Auto-sync on page load
 - [x] Auto-sync after changes
 - [x] Sync status indicator
-- [ ] Build activity feed component
-- [ ] Add export functionality (CSV, Markdown, JSON)
+- [x] Build activity feed component
+- [x] Add export functionality (CSV, Markdown, JSON)
 
 ### Additional Features (From User Requests)
 - [ ] Full edit modal with all fields
@@ -151,7 +151,7 @@
 - [ ] Dependency impact analysis
 - [ ] Auto-update roadmap on status changes
 - [ ] Flag complex changes for review
-- [ ] Self-registration API endpoint for Manus chats
+- [x] Self-registration API endpoint for Manus chats
 - [ ] Keyboard shortcuts system
 - [ ] Toast notifications for all actions
 - [ ] Commenting system on features (any view)
