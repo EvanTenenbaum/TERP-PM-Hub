@@ -26,9 +26,18 @@ export function useAutoSync() {
     }
   });
 
-  // Sync on mount
+  // Sync once per session (not on every page load)
   useEffect(() => {
-    syncMutation.mutate();
+    const hasSyncedThisSession = sessionStorage.getItem('pm-hub-synced');
+    
+    if (!hasSyncedThisSession) {
+      console.log('[Auto-Sync] First sync of session');
+      syncMutation.mutate();
+      sessionStorage.setItem('pm-hub-synced', new Date().toISOString());
+    } else {
+      console.log('[Auto-Sync] Already synced this session at', hasSyncedThisSession);
+      setLastSync(new Date(hasSyncedThisSession));
+    }
   }, []);
 
   // Periodic sync
