@@ -10,6 +10,7 @@ import { Link } from "wouter";
 import { ArrowLeft, Code, Sparkles, ExternalLink, AlertCircle, Search } from "lucide-react";
 import BulkActions from '@/components/BulkActions';
 import ExportData from '@/components/ExportData';
+import EditFeatureModal from '@/components/EditFeatureModal';
 import { Input } from '@/components/ui/input';
 import { useState } from "react";
 import { toast } from "sonner";
@@ -43,6 +44,8 @@ export default function Features() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [editingItem, setEditingItem] = useState<any>(null);
+  const utils = trpc.useUtils();
 
   const analyzeComplexity = trpc.devAgent.analyzeComplexity.useMutation();
   const generateCode = trpc.devAgent.generateCode.useMutation();
@@ -241,20 +244,26 @@ Please implement this feature following the dev-brief requirements.`;
                     </div>
                     <CardTitle className="text-base sm:text-lg">{item.title}</CardTitle>
                   </div>
-                  {item.type === "FEAT" && item.status === "in-progress" && (
-                    <div className="flex gap-2 w-full sm:w-auto">
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setEditingItem(item)}
+                    >
+                      Edit
+                    </Button>
+                    {item.type === "FEAT" && item.status === "in-progress" && (
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => handleDevAgent(item)}
-                        className="flex-1 sm:flex-none"
                       >
                         <Sparkles className="w-4 h-4 mr-2" />
                         <span className="hidden sm:inline">Dev Agent</span>
                         <span className="sm:hidden">Generate</span>
                       </Button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               {item.description && (
@@ -279,6 +288,19 @@ Please implement this feature following the dev-brief requirements.`;
           ))}
         </div>
       </main>
+
+      {/* Edit Feature Modal */}
+      {editingItem && (
+        <EditFeatureModal
+          item={editingItem}
+          open={!!editingItem}
+          onOpenChange={(open) => !open && setEditingItem(null)}
+          onSuccess={() => {
+            utils.pmItems.list.invalidate();
+            setEditingItem(null);
+          }}
+        />
+      )}
 
       {/* Dev Agent Dialog */}
       <Dialog open={showDevDialog} onOpenChange={setShowDevDialog}>

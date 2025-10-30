@@ -193,3 +193,22 @@
 - [ ] Ensure search returns results
 - [ ] Test Cmd+K command palette
 - [ ] Verify edit modal saves changes
+
+
+## GET TO 100% - NO PLACEHOLDERS, NO FAKE DATA
+- [x] Wire EditFeatureModal to Features page - Edit button on each item, modal opens and saves
+- [x] Connect Timeline to real PM items with dependencies - already wired, uses pmItems from database
+- [x] Test and verify Export functionality (CSV/MD/JSON) - fully functional, downloads files
+- [x] Test and verify Bulk Actions work - fully functional, batch updates status/priority
+- [x] Fix GitHub sync error handling - silently handle 404s for missing directories
+- [x] Test Cmd+K shortcut opens CommandPalette - fully functional, searches items and navigates
+- [ ] Remove or wire Activity Feed with real data
+- [ ] Complete Inbox page - all features working
+- [ ] Test Dev Agent code generation end-to-end
+- [ ] Build Tags UI - add/edit/filter by tags
+- [ ] Build Priority management UI
+- [ ] Build Dependency tracking UI
+- [ ] Build Commenting system with AI interpretation
+- [ ] Build Impact Analysis when editing features
+- [ ] Remove all placeholder buttons/features
+- [ ] Verify every single button does something real

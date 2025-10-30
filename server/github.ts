@@ -62,7 +62,11 @@ export async function listDirectory(path: string): Promise<Array<{ name: string;
     }
 
     return [];
-  } catch (error) {
+  } catch (error: any) {
+    // Silently handle 404s for missing directories
+    if (error.status === 404) {
+      return [];
+    }
     console.error(`Failed to list directory ${path}:`, error);
     return [];
   }
