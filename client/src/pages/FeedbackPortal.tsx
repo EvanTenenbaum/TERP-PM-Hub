@@ -79,6 +79,20 @@ export default function FeedbackPortal() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Instructions */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <h3 className="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
+            <Sparkles className="w-4 h-4" />
+            How to Use This Portal
+          </h3>
+          <ol className="text-sm text-blue-800 space-y-1 ml-4 list-decimal">
+            <li><strong>Select</strong> a feedback item from the list to view full details</li>
+            <li><strong>Generate AI Suggestions</strong> to see where and how to apply the feedback</li>
+            <li><strong>Review</strong> the suggested modules and implementation steps</li>
+            <li><strong>Archive</strong> feedback once you've addressed it to keep the list organized</li>
+          </ol>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Feedback List */}
           <div className="lg:col-span-1 space-y-4">

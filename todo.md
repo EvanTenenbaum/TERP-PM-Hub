@@ -335,3 +335,10 @@
 - [x] Document GitHub sync
 - [x] Include troubleshooting section
 - [x] Bible-compliant formatting and structure
+
+
+## UI Improvements - Training & Instructions
+- [x] Add Training/Help section to Dashboard homepage
+- [x] Link to TRAINING_GUIDE.md from Dashboard (Actions tab)
+- [x] Add clear, concise instructions above feedback list in Client Portal
+- [x] Make instructions client-friendly (no PM jargon)

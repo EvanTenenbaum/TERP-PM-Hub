@@ -190,6 +190,12 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent className="space-y-2">
                 <Button asChild variant="outline" className="w-full justify-start">
+                  <a href="/TRAINING_GUIDE.md" target="_blank" rel="noopener noreferrer">
+                    <FileText className="w-4 h-4 mr-2" />
+                    <span className="text-sm">📚 Help & Training Guide</span>
+                  </a>
+                </Button>
+                <Button asChild variant="outline" className="w-full justify-start">
                   <Link href="/features">
                     <FileText className="w-4 h-4 mr-2" />
                     <span className="text-sm">View All Features</span>
