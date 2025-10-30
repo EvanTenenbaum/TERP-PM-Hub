@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
+import { useAutoSync } from "@/hooks/useAutoSync";
 import { Link } from "wouter";
 import { MessageSquare, FileText, Bug, Lightbulb, RefreshCw, TrendingUp } from "lucide-react";
 import QuickCapture from "@/components/QuickCapture";
@@ -13,7 +14,7 @@ export default function Dashboard() {
   const { user, loading, isAuthenticated } = useAuth();
   const { data: pmItems, isLoading: itemsLoading } = trpc.pmItems.list.useQuery();
   const { data: latestSync } = trpc.sync.getLatestSync.useQuery();
-  const syncMutation = trpc.sync.triggerSync.useMutation();
+  const { isSyncing, lastSync, manualSync } = useAutoSync();
 
   if (loading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
@@ -35,8 +36,8 @@ export default function Dashboard() {
   const ideas = pmItems?.filter((item) => item.type === "IDEA") || [];
   const bugs = pmItems?.filter((item) => item.type === "BUG") || [];
 
-  const handleSync = async () => {
-    await syncMutation.mutateAsync();
+  const handleSync = () => {
+    manualSync();
   };
 
   return (
@@ -47,8 +48,8 @@ export default function Dashboard() {
           <h1 className="text-lg sm:text-xl font-bold">TERP PM Hub</h1>
           <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
             <span className="text-sm text-muted-foreground truncate">{user?.name}</span>
-            <Button onClick={handleSync} disabled={syncMutation.isPending} size="sm" className="ml-auto">
-              <RefreshCw className={`w-4 h-4 sm:mr-2 ${syncMutation.isPending ? "animate-spin" : ""}`} />
+            <Button onClick={handleSync} disabled={isSyncing} size="sm" className="ml-auto">
+              <RefreshCw className={`w-4 h-4 sm:mr-2 ${isSyncing ? "animate-spin" : ""}`} />
               <span className="hidden sm:inline">Sync</span>
             </Button>
           </div>

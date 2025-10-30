@@ -94,6 +94,21 @@ export const appRouter = router({
     get: protectedProcedure.input(z.object({ itemId: z.string() })).query(async ({ input }) => {
       return await db.getPMItemById(input.itemId);
     }),
+
+    // Update PM item
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        type: z.enum(['FEAT', 'BUG', 'IDEA', 'IMPROVE', 'TECH']).optional(),
+        title: z.string().optional(),
+        description: z.string().optional(),
+        status: z.enum(['inbox', 'backlog', 'planned', 'in-progress', 'completed', 'on-hold', 'archived']).optional(),
+        priority: z.enum(['low', 'medium', 'high', 'critical']).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...updates } = input;
+        return await db.updatePMItem(id, updates as any);
+      }),
   }),
 
   // Conversations

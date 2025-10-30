@@ -133,6 +133,22 @@ export async function getPMItemById(itemId: string) {
   return result.length > 0 ? result[0] : null;
 }
 
+export async function updatePMItem(id: number, updates: Partial<InsertPmItem>) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot update PM item: database not available");
+    return null;
+  }
+
+  await db.update(pmItems).set({
+    ...updates,
+    updatedAt: new Date()
+  }).where(eq(pmItems.id, id));
+  
+  const result = await db.select().from(pmItems).where(eq(pmItems.id, id)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
 // Conversations
 
 export async function createConversation(conversation: InsertConversation) {

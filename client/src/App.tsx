@@ -8,13 +8,15 @@ import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Chat from "./pages/Chat";
 import Features from "./pages/Features";
+import Inbox from "./pages/Inbox";
+import CommandPalette from "./components/CommandPalette";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/dashboard"} component={Dashboard} />
+      <Route path={"/"} component={Home} />      <Route path={"/dashboard"} component={Dashboard} />
+      <Route path={"/inbox"} component={Inbox} />
       <Route path={"/chat/:agentType?"} component={Chat} />
       <Route path={"/features"} component={Features} />
       <Route path={"/404"} component={NotFound} />
@@ -37,6 +39,7 @@ function App() {
       >
         <TooltipProvider>
           <Toaster />
+          <CommandPalette />
           <Router />
         </TooltipProvider>
       </ThemeProvider>
