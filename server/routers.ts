@@ -113,6 +113,9 @@ export const appRouter = router({
         description: z.string().optional(),
         status: z.enum(['inbox', 'backlog', 'planned', 'in-progress', 'completed', 'on-hold', 'archived']).optional(),
         priority: z.enum(['low', 'medium', 'high', 'critical']).optional(),
+        tags: z.array(z.string()).optional(),
+        related: z.array(z.string()).optional(),
+        metadata: z.any().optional(),
       }))
       .mutation(async ({ input }) => {
         const { id, ...updates } = input;

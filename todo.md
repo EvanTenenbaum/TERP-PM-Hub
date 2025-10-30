@@ -202,11 +202,11 @@
 - [x] Test and verify Bulk Actions work - fully functional, batch updates status/priority
 - [x] Fix GitHub sync error handling - silently handle 404s for missing directories
 - [x] Test Cmd+K shortcut opens CommandPalette - fully functional, searches items and navigates
-- [ ] Remove or wire Activity Feed with real data
-- [ ] Complete Inbox page - all features working
-- [ ] Test Dev Agent code generation end-to-end
-- [ ] Build Tags UI - add/edit/filter by tags
-- [ ] Build Priority management UI
+- [x] Wire Activity Feed with real data - shows recent creates/updates from PM items
+- [x] Complete Inbox page - all features working (convert to feature, quick fix, full agent, context editing)
+- [x] Test Dev Agent code generation end-to-end - fully implemented with complexity analysis, quick gen, and handoff
+- [x] Build Tags UI - add/edit/filter by tags (TagsManager component in EditModal)
+- [x] Build Priority management UI (PrioritySelector component with visual badges)
 - [ ] Build Dependency tracking UI
 - [ ] Build Commenting system with AI interpretation
 - [ ] Build Impact Analysis when editing features

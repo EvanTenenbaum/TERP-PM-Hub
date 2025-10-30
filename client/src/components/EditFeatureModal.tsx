@@ -10,6 +10,8 @@ import { trpc } from '@/lib/trpc';
 import { toast } from 'sonner';
 import { AlertCircle, Trash2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import TagsManager from './TagsManager';
+import PrioritySelector from './PrioritySelector';
 
 interface EditFeatureModalProps {
   item: any;
@@ -22,8 +24,9 @@ export default function EditFeatureModal({ item, open, onOpenChange, onSuccess }
   const [title, setTitle] = useState(item.title);
   const [description, setDescription] = useState(item.description || '');
   const [status, setStatus] = useState(item.status);
-  const [priority, setPriority] = useState(item.priority || 'medium');
+  const [priority, setPriority] = useState(item.priority || null);
   const [type, setType] = useState(item.type);
+  const [tags, setTags] = useState(item.tags || []);
   const [showImpactWarning, setShowImpactWarning] = useState(false);
 
   const updateMutation = trpc.pmItems.update.useMutation({
@@ -55,6 +58,7 @@ export default function EditFeatureModal({ item, open, onOpenChange, onSuccess }
       status: status as any,
       priority: priority as any,
       type: type as any,
+      tags,
     });
   };
 
@@ -108,18 +112,14 @@ export default function EditFeatureModal({ item, open, onOpenChange, onSuccess }
 
           {/* Priority */}
           <div className="space-y-2">
-            <Label htmlFor="priority">Priority</Label>
-            <Select value={priority} onValueChange={setPriority}>
-              <SelectTrigger id="priority">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="critical">Critical</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label>Priority</Label>
+            <PrioritySelector value={priority} onChange={setPriority} />
+          </div>
+
+          {/* Tags */}
+          <div className="space-y-2">
+            <Label>Tags</Label>
+            <TagsManager tags={tags} onChange={setTags} />
           </div>
 
           {/* Title */}

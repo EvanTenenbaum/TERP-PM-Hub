@@ -10,6 +10,7 @@ import { MessageSquare, FileText, Bug, Lightbulb, RefreshCw, TrendingUp } from "
 import QuickCapture from "@/components/QuickCapture";
 import Timeline from "@/components/Timeline";
 import InboxSection from "@/components/InboxSection";
+import ActivityFeed from "@/components/ActivityFeed";
 
 export default function Dashboard() {
   const { user, loading, isAuthenticated } = useAuth();
@@ -178,6 +179,10 @@ export default function Dashboard() {
           </TabsContent>
 
           <TabsContent value="actions" className="space-y-3 mt-4">
+            {pmItems && pmItems.length > 0 && (
+              <ActivityFeed items={pmItems} limit={15} />
+            )}
+            
             <Card>
               <CardHeader>
                 <CardTitle className="text-base sm:text-lg">Quick Actions</CardTitle>
