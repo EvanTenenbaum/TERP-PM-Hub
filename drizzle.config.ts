@@ -5,11 +5,14 @@ if (!connectionString) {
   throw new Error("DATABASE_URL is required to run drizzle commands");
 }
 
+// Detect dialect from connection string
+const dialect = connectionString.startsWith('file:') ? 'sqlite' : 'mysql';
+
 export default defineConfig({
   schema: "./drizzle/schema.ts",
   out: "./drizzle",
-  dialect: "mysql",
-  dbCredentials: {
-    url: connectionString,
-  },
+  dialect: dialect as 'mysql' | 'sqlite',
+  dbCredentials: dialect === 'sqlite' 
+    ? { url: connectionString.replace('file:', '') }
+    : { url: connectionString },
 });
