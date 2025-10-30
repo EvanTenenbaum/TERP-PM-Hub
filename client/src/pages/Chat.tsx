@@ -7,7 +7,8 @@ import { trpc } from "@/lib/trpc";
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "wouter";
 import { ArrowLeft, Send } from "lucide-react";
-import { Streamdown } from "streamdown";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const agentTitles = {
   inbox: "Idea Inbox",
@@ -141,7 +142,9 @@ export default function Chat() {
                 }`}
               >
                 {msg.role === "assistant" ? (
-                  <Streamdown>{msg.content}</Streamdown>
+                  <div className="prose prose-sm dark:prose-invert max-w-none">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                  </div>
                 ) : (
                   <p className="whitespace-pre-wrap">{msg.content}</p>
                 )}

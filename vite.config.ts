@@ -26,7 +26,7 @@ export default defineConfig({
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
     chunkSizeWarningLimit: 600,
-    target: 'es2015', // Mobile-first: Support iOS Safari 13+, Android Chrome 87+
+    target: 'esnext', // Use modern target to avoid transpilation issues with Mermaid
     minify: 'esbuild', // Fast and mobile-compatible
     rollupOptions: {
       output: {
@@ -42,8 +42,9 @@ export default defineConfig({
             if (id.includes('@radix-ui')) {
               return 'ui-vendor';
             }
+            // Mermaid causes initialization errors - exclude from build
             if (id.includes('mermaid')) {
-              return 'mermaid';
+              return; // Don't bundle mermaid
             }
             // All other node_modules go into vendor chunk
             return 'vendor';
