@@ -9,6 +9,7 @@ import { Link } from "wouter";
 import { MessageSquare, FileText, Bug, Lightbulb, RefreshCw, TrendingUp } from "lucide-react";
 import QuickCapture from "@/components/QuickCapture";
 import Timeline from "@/components/Timeline";
+import InboxSection from "@/components/InboxSection";
 
 export default function Dashboard() {
   const { user, loading, isAuthenticated } = useAuth();
@@ -112,6 +113,9 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Inbox Section - Show captured items */}
+        <InboxSection />
 
         {/* Tabs for different views */}
         <Tabs defaultValue="agents" className="w-full">

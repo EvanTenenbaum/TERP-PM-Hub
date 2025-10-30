@@ -210,14 +210,56 @@ export const appRouter = router({
           })),
         ];
 
-        // Call LLM
+        // Call LLM with structured output for inbox agent
+        const useStructured = conversation.agentType === 'inbox';
+        
         const response = await invokeLLM({
           messages: llmMessages,
+          ...(useStructured && {
+            response_format: {
+              type: "json_schema",
+              json_schema: {
+                name: "inbox_item",
+                strict: true,
+                schema: {
+                  type: "object",
+                  properties: {
+                    type: { type: "string", enum: ["FEAT", "BUG", "IDEA", "IMPROVE", "TECH"] },
+                    title: { type: "string" },
+                    description: { type: "string" },
+                    priority: { type: "string", enum: ["low", "medium", "high", "critical"] },
+                    response: { type: "string" }
+                  },
+                  required: ["type", "title", "description", "priority", "response"],
+                  additionalProperties: false
+                }
+              }
+            }
+          })
         });
 
         const assistantMessage = typeof response.choices[0].message.content === "string" 
           ? response.choices[0].message.content 
           : JSON.stringify(response.choices[0].message.content);
+
+        // For inbox agent, create PM item from structured response
+        if (useStructured && conversation.agentType === 'inbox') {
+          try {
+            const parsed = JSON.parse(assistantMessage);
+            await db.upsertPMItem({
+              itemId: `TERP-${parsed.type}-${Date.now()}`,
+              type: parsed.type,
+              title: parsed.title,
+              description: parsed.description,
+              status: 'inbox',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              metadata: { conversationId: input.conversationId, priority: parsed.priority }
+            });
+          } catch (e) {
+            console.error('Failed to parse inbox item:', e);
+          }
+        }
 
         // Save assistant message
         await db.createMessage({

@@ -174,3 +174,22 @@
 - [x] Update MANUS_CHAT_INTEGRATION.md with Bible requirements
 - [x] Create enhanced dev-brief template with protocols
 - [x] Committed all changes to TERP GitHub repo
+
+
+## Critical Fixes - Make Everything Work 100%
+- [x] Wire Quick Capture to backend - save captured items to database
+- [x] Connect Quick Capture to AI Idea Inbox agent for interpretation
+- [x] Move Inbox view to main Dashboard page
+- [x] Update inbox agent to return structured JSON
+- [x] Create InboxSection component showing recent items
+- [ ] Audit all UI elements - ensure every button/feature works
+- [ ] Fix any disconnected components
+- [ ] Test all agent chat interfaces
+- [ ] Verify GitHub sync actually works
+- [ ] Test export functionality
+- [ ] Test bulk actions
+- [ ] Verify timeline displays real data
+- [ ] Check all navigation links work
+- [ ] Ensure search returns results
+- [ ] Test Cmd+K command palette
+- [ ] Verify edit modal saves changes
